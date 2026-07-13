@@ -28,7 +28,7 @@ export class LocationsController {
   }
 
   @Get(':id')
-  async getLocationById(@Param('id') id: string): Promise<LocationModel> {
+  async getLocationById(@Param('id') id: string): Promise<LocationModel | null> {
     return this.locationsService.location({ id });
   }
 

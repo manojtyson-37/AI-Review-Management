@@ -42,7 +42,7 @@ export class BusinessesController {
   }
 
   @Get(':id')
-  async getBusinessById(@Param('id') id: string): Promise<BusinessModel> {
+  async getBusinessById(@Param('id') id: string): Promise<BusinessModel | null> {
     return this.businessesService.business({ id });
   }
 
