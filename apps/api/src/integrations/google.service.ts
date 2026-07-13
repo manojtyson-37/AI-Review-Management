@@ -7,7 +7,23 @@ export class GoogleIntegrationService {
 
   // In production, this would do OAuth flow.
   // For MVP, we simulate a successful connection.
-  async connectMockGoogleAccount(businessId: string) {
+  async connectMockGoogleAccount(businessId: string, userId: string) {
+    // Ensure the mock business exists before attaching tokens
+    await this.prisma.business.upsert({
+      where: { id: businessId },
+      update: {},
+      create: {
+        id: businessId,
+        name: 'Mock Business',
+        users: {
+          create: {
+            userId: userId,
+            role: 'BUSINESS_OWNER'
+          }
+        }
+      }
+    });
+
     // Upsert the token for the business
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + 30); // 30 days from now

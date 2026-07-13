@@ -9,14 +9,10 @@ export class GoogleIntegrationController {
 
   @Post('connect')
   async connectMockAccount(@Req() req: any) {
-    // We assume the user has a business linked to them.
-    // For MVP, if they don't, we should create or fetch one.
-    // This is mocked to bypass full user-business role complex logic for MVP.
-    // Let's assume the frontend passes businessId or we use user's first business
-    
     // Hardcode a mock business id for demo purposes if none exist
     const mockBusinessId = "mock_biz_" + req.user.sub;
-    await this.googleService.connectMockGoogleAccount(mockBusinessId);
+    const userId = req.user.sub;
+    await this.googleService.connectMockGoogleAccount(mockBusinessId, userId);
     return { success: true, message: "Mock Google Account Connected" };
   }
 
