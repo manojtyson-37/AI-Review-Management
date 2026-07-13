@@ -5,9 +5,9 @@ import { useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useParams } from "next/navigation";
-import { Star, CheckCircle2 } from "lucide-react";
+import { Star, CheckCircle2, AlertCircle } from "lucide-react";
 
-const TAGS = [
+const POSITIVE_TAGS = [
   "Excellent Service", 
   "Friendly Staff", 
   "Great Value", 
@@ -15,6 +15,16 @@ const TAGS = [
   "Quick Turnaround",
   "Professional",
   "Highly Recommend"
+];
+
+const NEGATIVE_TAGS = [
+  "Poor Service",
+  "Long Wait Time",
+  "Unprofessional Staff",
+  "Unclean Environment",
+  "Overpriced",
+  "Hard to Find",
+  "Other"
 ];
 
 export default function GuestFlowPage() {
@@ -27,6 +37,9 @@ export default function GuestFlowPage() {
   const [extraDetails, setExtraDetails] = useState("");
   const [draft, setDraft] = useState("");
 
+  const isPositive = rating >= 4;
+  const currentTags = isPositive ? POSITIVE_TAGS : NEGATIVE_TAGS;
+
   const toggleTag = (tag: string) => {
     setSelectedTags(prev => 
       prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]
@@ -35,8 +48,11 @@ export default function GuestFlowPage() {
 
   const generateReview = useMutation({
     mutationFn: async () => {
-      // Simulating AI generation based on answers
       await new Promise(r => setTimeout(r, 1500));
+      
+      if (!isPositive) {
+        return "Thank you. Your feedback has been sent directly to our management team.";
+      }
       
       let base = `I had a fantastic experience! `;
       if (selectedTags.length > 0) {
@@ -55,6 +71,8 @@ export default function GuestFlowPage() {
   });
 
   const handleCopy = () => {
+    if (!isPositive) return;
+    
     navigator.clipboard.writeText(draft);
     if (locationId === 'google_loc_2') {
       window.location.href = "https://www.google.com/search?q=Sridatri+physio+care&oq=srid&gs_lcrp=EgZjaHJvbWUqCAgCEEUYJxg7MgYIABBFGDwyCggBEC4YsQMYgAQyCAgCEEUYJxg7MgYIAxBFGDkyBggEEEUYPDIGCAUQRRg8MgYIBhBFGDwyBggHEEUYPNIBCDE5NjBqMGo3qAIAsAIA&sourceid=chrome&source=chrome.ob&ie=UTF-8&zx=1783979428166#lrd=0x3bcb99cef1978d0b:0xb4f762158a9d4a4c,1,,,,";
@@ -93,6 +111,7 @@ export default function GuestFlowPage() {
                   }`}
                   onClick={() => {
                     setRating(star);
+                    setSelectedTags([]); // Reset tags on rating change
                     setTimeout(() => setStep(2), 400); // Auto-advance after short delay
                   }}
                 />
@@ -112,12 +131,16 @@ export default function GuestFlowPage() {
         {/* Step 2: Tags */}
         {step === 2 && (
           <div className="flex flex-col space-y-6 animate-in fade-in slide-in-from-bottom-4">
-            <h2 className="text-2xl font-bold text-center">What did you like?</h2>
+            <h2 className="text-2xl font-bold text-center">
+              {isPositive ? "What did you like?" : "What went wrong?"}
+            </h2>
             <p className="text-center text-muted-foreground text-sm">
-              Select all that apply. This helps our AI write a great review!
+              {isPositive 
+                ? "Select all that apply. This helps our AI write a great review!"
+                : "We are so sorry to hear that. Please let us know what happened."}
             </p>
             <div className="flex flex-wrap gap-2 justify-center py-2">
-              {TAGS.map(tag => (
+              {currentTags.map(tag => (
                 <div
                   key={tag}
                   onClick={() => toggleTag(tag)}
@@ -141,12 +164,16 @@ export default function GuestFlowPage() {
         {/* Step 3: Extra Details */}
         {step === 3 && (
           <div className="flex flex-col space-y-6 animate-in fade-in slide-in-from-bottom-4">
-            <h2 className="text-2xl font-bold text-center">Any specific highlights?</h2>
+            <h2 className="text-2xl font-bold text-center">
+              {isPositive ? "Any specific highlights?" : "How can we improve?"}
+            </h2>
             <p className="text-center text-muted-foreground text-sm">
-              Optional: Mention a staff member's name or a specific detail you loved.
+              {isPositive 
+                ? "Optional: Mention a staff member's name or a specific detail you loved."
+                : "Your feedback is completely private and goes straight to our management."}
             </p>
             <Textarea
-              placeholder="e.g. John was super helpful!"
+              placeholder={isPositive ? "e.g. John was super helpful!" : "e.g. I waited 45 minutes for..."}
               className="min-h-[120px] text-lg"
               value={extraDetails}
               onChange={(e) => setExtraDetails(e.target.value)}
@@ -160,7 +187,7 @@ export default function GuestFlowPage() {
                   generateReview.mutate();
                 }}
               >
-                Generate Review
+                {isPositive ? "Generate Review" : "Submit Feedback"}
               </Button>
             </div>
           </div>
@@ -170,7 +197,9 @@ export default function GuestFlowPage() {
         {step === 99 && (
           <div className="flex flex-col items-center justify-center space-y-6 py-12 animate-in fade-in">
             <div className="h-12 w-12 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-            <h3 className="text-xl font-medium animate-pulse">Crafting your review...</h3>
+            <h3 className="text-xl font-medium animate-pulse">
+              {isPositive ? "Crafting your review..." : "Sending securely..."}
+            </h3>
           </div>
         )}
 
@@ -178,30 +207,61 @@ export default function GuestFlowPage() {
         {step === 4 && (
           <div className="flex flex-col space-y-4 animate-in fade-in slide-in-from-bottom-4">
             <div className="flex justify-center mb-2">
-              <CheckCircle2 className="w-16 h-16 text-green-500" />
+              {isPositive 
+                ? <CheckCircle2 className="w-16 h-16 text-green-500" />
+                : <AlertCircle className="w-16 h-16 text-primary" />
+              }
             </div>
-            <h2 className="text-2xl font-bold text-center text-primary">Your Review is Ready!</h2>
+            <h2 className="text-2xl font-bold text-center text-primary">
+              {isPositive ? "Your Review is Ready!" : "Thank You"}
+            </h2>
             <p className="text-center text-muted-foreground text-sm">
-              Copy this draft and paste it on our Google page. You can edit it there if you'd like!
+              {isPositive 
+                ? "Copy this draft and paste it on our Google page. You can edit it there if you'd like!"
+                : "Your feedback has been sent directly to management. We appreciate you taking the time to help us improve."
+              }
             </p>
-            <div className="bg-muted p-4 rounded-lg mt-4 border shadow-inner">
-              <p className="text-foreground text-lg leading-relaxed">{draft}</p>
-            </div>
-            <Button 
-              size="lg" 
-              className="w-full mt-6 text-lg py-6 bg-blue-600 hover:bg-blue-700 shadow-md transition-transform hover:scale-[1.02]"
-              onClick={handleCopy}
-            >
-              Copy & Go to Google
-            </Button>
-            <Button variant="ghost" className="mt-2" onClick={() => {
-              setStep(1);
-              setRating(0);
-              setSelectedTags([]);
-              setExtraDetails("");
-            }}>
-              Start Over
-            </Button>
+            
+            {isPositive && (
+              <div className="bg-muted p-4 rounded-lg mt-4 border shadow-inner">
+                <p className="text-foreground text-lg leading-relaxed">{draft}</p>
+              </div>
+            )}
+
+            {isPositive ? (
+              <Button 
+                size="lg" 
+                className="w-full mt-6 text-lg py-6 bg-blue-600 hover:bg-blue-700 shadow-md transition-transform hover:scale-[1.02]"
+                onClick={handleCopy}
+              >
+                Copy & Go to Google
+              </Button>
+            ) : (
+              <Button 
+                size="lg"
+                variant="outline"
+                className="w-full mt-6 text-lg py-6"
+                onClick={() => {
+                  setStep(1);
+                  setRating(0);
+                  setSelectedTags([]);
+                  setExtraDetails("");
+                }}
+              >
+                Close
+              </Button>
+            )}
+
+            {isPositive && (
+              <Button variant="ghost" className="mt-2" onClick={() => {
+                setStep(1);
+                setRating(0);
+                setSelectedTags([]);
+                setExtraDetails("");
+              }}>
+                Start Over
+              </Button>
+            )}
           </div>
         )}
 
