@@ -5,8 +5,11 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api-client";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { useParams } from "next/navigation";
 
-export default function GuestFlowPage({ params }: { params: { locationId: string } }) {
+export default function GuestFlowPage() {
+  const params = useParams();
+  const locationId = params?.locationId as string;
   const [step, setStep] = useState(1);
   const [feedback, setFeedback] = useState("");
   const [draft, setDraft] = useState("");
@@ -36,7 +39,7 @@ export default function GuestFlowPage({ params }: { params: { locationId: string
     navigator.clipboard.writeText(draft);
     // In production, log "COPIED" status to Analytics
     // Redirect to Google Place ID URL
-    window.location.href = `https://search.google.com/local/writereview?placeid=${params.locationId}`;
+    window.location.href = `https://search.google.com/local/writereview?placeid=${locationId}`;
   };
 
   return (
