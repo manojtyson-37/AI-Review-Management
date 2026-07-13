@@ -20,6 +20,14 @@ export class LocationsController {
     });
   }
 
+  @Get('my-locations')
+  async getMyLocations(@Req() req: any): Promise<LocationModel[]> {
+    const mockBusinessId = "mock_biz_" + req.user.sub;
+    return this.locationsService.locations({
+      where: { businessId: mockBusinessId }
+    });
+  }
+
   @Get('business/:businessId')
   async getLocationsByBusiness(@Param('businessId') businessId: string): Promise<LocationModel[]> {
     return this.locationsService.locations({

@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default function DashboardLayout({
   children,
 }: {
@@ -9,15 +11,15 @@ export default function DashboardLayout({
         <div className="flex h-16 items-center px-4 md:px-6">
           <h1 className="text-xl font-bold">ReviewAssist AI</h1>
           <nav className="ml-auto flex gap-4 sm:gap-6">
-            <a className="text-sm font-medium hover:underline underline-offset-4" href="#">
+            <Link className="text-sm font-medium hover:underline underline-offset-4" href="/dashboard">
               Overview
-            </a>
-            <a className="text-sm font-medium hover:underline underline-offset-4" href="#">
-              Locations
-            </a>
-            <a className="text-sm font-medium hover:underline underline-offset-4" href="#">
-              Settings
-            </a>
+            </Link>
+            <Link className="text-sm font-medium hover:underline underline-offset-4" href="/dashboard/locations">
+              Locations & QR
+            </Link>
+            <Link className="text-sm font-medium hover:underline underline-offset-4" href="/dashboard/integrations">
+              Integrations
+            </Link>
           </nav>
         </div>
       </header>
