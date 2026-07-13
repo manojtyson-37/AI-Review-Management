@@ -3,15 +3,18 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 
-const data = [
-  { name: 'Scans', total: 1200 },
-  { name: 'Questions', total: 950 },
-  { name: 'AI Drafts', total: 800 },
-  { name: 'Copies', total: 600 },
-  { name: 'Posted', total: 400 },
-]
+import { useAnalytics } from '@/hooks/use-analytics'
 
 export default function DashboardPage() {
+  const { data, isLoading } = useAnalytics();
+
+  const chartData = data?.funnel || [
+    { name: 'Scans', total: 0 },
+    { name: 'Questions', total: 0 },
+    { name: 'AI Drafts', total: 0 },
+    { name: 'Copies', total: 0 },
+    { name: 'Posted', total: 0 },
+  ];
   return (
     <>
       <div className="flex items-center justify-between space-y-2">
@@ -23,7 +26,7 @@ export default function DashboardPage() {
             <CardTitle className="text-sm font-medium">Total Reviews Posted</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">+400</div>
+            <div className="text-2xl font-bold">{data?.totalReviews || 0}</div>
             <p className="text-xs text-muted-foreground">+20.1% from last month</p>
           </CardContent>
         </Card>
@@ -32,7 +35,7 @@ export default function DashboardPage() {
             <CardTitle className="text-sm font-medium">Conversion Rate</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">33.3%</div>
+            <div className="text-2xl font-bold">{data?.conversionRate ? `${data.conversionRate}%` : '0%'}</div>
             <p className="text-xs text-muted-foreground">Scans to Posts</p>
           </CardContent>
         </Card>
@@ -41,7 +44,7 @@ export default function DashboardPage() {
             <CardTitle className="text-sm font-medium">Active Locations</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">3</div>
+            <div className="text-2xl font-bold">{data?.activeLocations || 0}</div>
           </CardContent>
         </Card>
       </div>
@@ -55,7 +58,7 @@ export default function DashboardPage() {
           <CardContent className="pl-2">
             <div className="h-[350px] w-full">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={data}>
+                <BarChart data={chartData}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} />
                   <XAxis dataKey="name" stroke="#888888" fontSize={12} tickLine={false} axisLine={false} />
                   <YAxis stroke="#888888" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `${value}`} />

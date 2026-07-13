@@ -14,7 +14,7 @@ export class AuthController {
   @UseGuards(AuthGuard('google'))
   async googleAuthRedirect(@Req() req, @Res() res) {
     const jwt = await this.authService.validateOAuthLogin(req.user);
-    // Redirect to frontend with JWT token. In production, consider HTTP-only cookies.
-    res.redirect(`http://localhost:3000/dashboard?token=${jwt}`);
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    res.redirect(`${frontendUrl}/auth/callback?token=${jwt}`);
   }
 }
