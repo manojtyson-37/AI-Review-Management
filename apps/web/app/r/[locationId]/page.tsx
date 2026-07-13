@@ -35,8 +35,8 @@ export default function GuestFlowPage({ params }: { params: { locationId: string
   const handleCopy = () => {
     navigator.clipboard.writeText(draft);
     // In production, log "COPIED" status to Analytics
-    // And redirect to Google Place ID URL
-    alert("Copied! Redirecting to Google...");
+    // Redirect to Google Place ID URL
+    window.location.href = `https://search.google.com/local/writereview?placeid=${params.locationId}`;
   };
 
   return (
