@@ -1,0 +1,184 @@
+datasource db {
+  provider = "postgresql"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  SUPER_ADMIN
+  AGENCY
+  BUSINESS_OWNER
+  MANAGER
+  STAFF
+  VIEWER
+}
+
+enum SessionStatus {
+  STARTED
+  QUESTIONS_ANSWERED
+  DRAFT_GENERATED
+  COPIED
+  REDIRECTED
+  POSTED
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String?
+  name      String?
+  role      Role     @default(VIEWER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  businesses BusinessUser[]
+  auditLogs  AuditLog[]
+}
+
+model Business {
+  id         String   @id @default(cuid())
+  name       String
+  logoUrl    String?
+  brandColor String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  users        BusinessUser[]
+  locations    Location[]
+  plan         Plan?          @relation(fields: [planId], references: [id])
+  planId       String?
+  subscription Subscription?
+}
+
+model BusinessUser {
+  id         String @id @default(cuid())
+  businessId String
+  userId     String
+  role       Role
+
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([businessId, userId])
+}
+
+model Location {
+  id         String   @id @default(cuid())
+  businessId String
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  name       String
+  address    String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  qrCodes        QRCode[]
+  reviewSessions ReviewSession[]
+  googleTokens   GoogleOAuthToken[]
+  reviewReplies  ReviewReply[]
+}
+
+model Plan {
+  id         String     @id @default(cuid())
+  name       String
+  price      Float
+  features   Json?
+  businesses Business[]
+}
+
+model Subscription {
+  id               String   @id @default(cuid())
+  businessId       String   @unique
+  business         Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  status           String
+  stripeSubId      String?
+  currentPeriodEnd DateTime
+}
+
+model QRCode {
+  id         String   @id @default(cuid())
+  locationId String
+  location   Location @relation(fields: [locationId], references: [id], onDelete: Cascade)
+  codeUrl    String
+  scans      Int      @default(0)
+  createdAt  DateTime @default(now())
+}
+
+model ReviewSession {
+  id         String        @id @default(cuid())
+  locationId String
+  location   Location      @relation(fields: [locationId], references: [id], onDelete: Cascade)
+  status     SessionStatus @default(STARTED)
+  rating     Int?
+  feedback   String?
+  guestIp    String?
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+
+  drafts ReviewDraft[]
+}
+
+model ReviewDraft {
+  id        String        @id @default(cuid())
+  sessionId String
+  session   ReviewSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  content   String
+  style     String
+  createdAt DateTime      @default(now())
+}
+
+model GoogleOAuthToken {
+  id           String   @id @default(cuid())
+  locationId   String
+  location     Location @relation(fields: [locationId], references: [id], onDelete: Cascade)
+  accessToken  String
+  refreshToken String
+  expiresAt    DateTime
+  createdAt    DateTime @default(now())
+}
+
+model ReviewReply {
+  id             String   @id @default(cuid())
+  locationId     String
+  location       Location @relation(fields: [locationId], references: [id], onDelete: Cascade)
+  googleReviewId String
+  replyContent   String
+  createdAt      DateTime @default(now())
+}
+
+model EmailTemplate {
+  id        String   @id @default(cuid())
+  name      String
+  subject   String
+  body      String
+  createdAt DateTime @default(now())
+}
+
+model NotificationLog {
+  id        String   @id @default(cuid())
+  type      String
+  recipient String
+  status    String
+  createdAt DateTime @default(now())
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  action    String
+  details   Json?
+  createdAt DateTime @default(now())
+}
+
+model Analytics {
+  id         String   @id @default(cuid())
+  date       DateTime @db.Date
+  entityId   String // could be businessId or locationId
+  entityType String // "BUSINESS" or "LOCATION"
+  metric     String
+  value      Int
+
+  @@unique([date, entityId, entityType, metric])
+}
