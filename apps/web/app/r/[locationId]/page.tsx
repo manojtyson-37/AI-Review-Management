@@ -38,8 +38,13 @@ export default function GuestFlowPage() {
   const handleCopy = () => {
     navigator.clipboard.writeText(draft);
     // In production, log "COPIED" status to Analytics
-    // Redirect to Google Place ID URL
-    window.location.href = `https://search.google.com/local/writereview?placeid=${locationId}`;
+    
+    // Redirect to Google Review page
+    if (locationId === 'google_loc_2') {
+      window.location.href = "https://www.google.com/search?q=Sridatri+physio+care&oq=srid&gs_lcrp=EgZjaHJvbWUqCAgCEEUYJxg7MgYIABBFGDwyCggBEC4YsQMYgAQyCAgCEEUYJxg7MgYIAxBFGDkyBggEEEUYPDIGCAUQRRg8MgYIBhBFGDwyBggHEEUYPNIBCDE5NjBqMGo3qAIAsAIA&sourceid=chrome&source=chrome.ob&ie=UTF-8&zx=1783979428166#lrd=0x3bcb99cef1978d0b:0xb4f762158a9d4a4c,1,,,,";
+    } else {
+      window.location.href = `https://search.google.com/local/writereview?placeid=${locationId}`;
+    }
   };
 
   return (
