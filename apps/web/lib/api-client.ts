@@ -1,4 +1,5 @@
 import axios from 'axios';
+import Cookies from 'js-cookie';
 
 const API_URL = process.env.NODE_ENV === 'production' 
   ? '/api' 
@@ -13,7 +14,7 @@ export const apiClient = axios.create({
 });
 
 apiClient.interceptors.request.use((config) => {
-  const token = require('js-cookie').default.get('auth_token');
+  const token = Cookies.get('auth_token');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
