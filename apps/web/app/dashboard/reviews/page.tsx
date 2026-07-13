@@ -22,6 +22,7 @@ export default function ReviewsPage() {
   const queryClient = useQueryClient();
   const [activeReplyId, setActiveReplyId] = useState<string | null>(null);
   const [draftReply, setDraftReply] = useState<string>("");
+  const [locationFilter, setLocationFilter] = useState<string>("all");
 
   const { data: reviews, isLoading } = useQuery<Review[]>({
     queryKey: ['reviews'],
@@ -30,6 +31,9 @@ export default function ReviewsPage() {
       return res.data;
     }
   });
+
+  const locations = reviews ? [...new Set(reviews.map(r => r.locationId))] : [];
+  const filteredReviews = locationFilter === 'all' ? reviews : reviews?.filter(r => r.locationId === locationFilter);
 
   const generateReply = useMutation({
     mutationFn: async (review: Review) => {
@@ -79,15 +83,32 @@ export default function ReviewsPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-3xl font-bold tracking-tight">Google Reviews</h2>
-        <p className="text-muted-foreground mt-2">
-          Manage your customer reviews and reply instantly using AI.
-        </p>
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+          <h2 className="text-3xl font-bold tracking-tight">Google Reviews</h2>
+          <p className="text-muted-foreground mt-2">
+            Manage your customer reviews and reply instantly using AI.
+          </p>
+        </div>
+        
+        {/* Location Filter */}
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-muted-foreground">Location:</span>
+          <select 
+            className="rounded-md border border-input bg-background px-3 py-2 text-sm"
+            value={locationFilter}
+            onChange={e => setLocationFilter(e.target.value)}
+          >
+            <option value="all">All Locations</option>
+            {locations.map(loc => (
+              <option key={loc} value={loc}>{loc}</option>
+            ))}
+          </select>
+        </div>
       </div>
 
       <div className="grid gap-6">
-        {reviews?.map((review) => (
+        {filteredReviews?.map((review) => (
           <Card key={review.id} className="overflow-hidden">
             <CardContent className="p-6">
               <div className="flex flex-col md:flex-row gap-6">
@@ -184,7 +205,7 @@ export default function ReviewsPage() {
           </Card>
         ))}
 
-        {reviews?.length === 0 && (
+        {filteredReviews?.length === 0 && (
           <div className="text-center py-12 bg-muted/20 rounded-xl border border-dashed">
             <MessageSquareReply className="mx-auto h-12 w-12 text-muted-foreground mb-4 opacity-50" />
             <h3 className="text-lg font-medium text-foreground">No reviews yet</h3>

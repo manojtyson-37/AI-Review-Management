@@ -14,11 +14,17 @@ export default function DashboardLayout({
             <Link className="text-sm font-medium hover:underline underline-offset-4" href="/dashboard">
               Overview
             </Link>
-            <Link className="text-sm font-medium hover:underline underline-offset-4" href="/dashboard/locations">
-              Locations & QR
-            </Link>
             <Link className="text-sm font-medium hover:underline underline-offset-4" href="/dashboard/reviews">
               Reviews
+            </Link>
+            <Link className="text-sm font-medium hover:underline underline-offset-4" href="/dashboard/feedback">
+              Feedback
+            </Link>
+            <Link className="text-sm font-medium hover:underline underline-offset-4" href="/dashboard/templates">
+              Templates
+            </Link>
+            <Link className="text-sm font-medium hover:underline underline-offset-4" href="/dashboard/locations">
+              Locations & QR
             </Link>
             <Link className="text-sm font-medium hover:underline underline-offset-4" href="/dashboard/integrations">
               Integrations
