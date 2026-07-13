@@ -14,13 +14,15 @@ import { AnalyticsModule } from './analytics/analytics.module';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 
+import { IntegrationsModule } from './integrations/integrations.module';
+
 @Module({
   imports: [
     ThrottlerModule.forRoot([{
       ttl: 60000,
       limit: 100,
     }]),
-    PrismaModule, AuthModule, UsersModule, BusinessesModule, LocationsModule, AiModule, AnalyticsModule, QrcodesModule, SessionsModule
+    PrismaModule, AuthModule, UsersModule, BusinessesModule, LocationsModule, AiModule, AnalyticsModule, QrcodesModule, SessionsModule, IntegrationsModule
   ],
   controllers: [AppController],
   providers: [

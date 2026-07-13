@@ -47,9 +47,10 @@ model Business {
 
   users        BusinessUser[]
   locations    Location[]
-  plan         Plan?          @relation(fields: [planId], references: [id])
+  plan         Plan?             @relation(fields: [planId], references: [id])
   planId       String?
   subscription Subscription?
+  googleToken  GoogleOAuthToken?
 }
 
 model BusinessUser {
@@ -65,17 +66,17 @@ model BusinessUser {
 }
 
 model Location {
-  id         String   @id @default(cuid())
-  businessId String
-  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
-  name       String
-  address    String?
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  id               String   @id @default(cuid())
+  businessId       String
+  business         Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  googleLocationId String?  @unique
+  name             String
+  address          String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 
   qrCodes        QRCode[]
   reviewSessions ReviewSession[]
-  googleTokens   GoogleOAuthToken[]
   reviewReplies  ReviewReply[]
 }
 
@@ -130,8 +131,8 @@ model ReviewDraft {
 
 model GoogleOAuthToken {
   id           String   @id @default(cuid())
-  locationId   String
-  location     Location @relation(fields: [locationId], references: [id], onDelete: Cascade)
+  businessId   String   @unique
+  business     Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
   accessToken  String
   refreshToken String
   expiresAt    DateTime
