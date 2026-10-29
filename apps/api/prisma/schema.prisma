@@ -15,6 +15,12 @@ enum Role {
   VIEWER
 }
 
+enum ReplyStatus {
+  NEEDS_REPLY
+  DRAFTED
+  REPLIED
+}
+
 enum SessionStatus {
   STARTED
   QUESTIONS_ANSWERED
@@ -70,14 +76,17 @@ model Location {
   businessId       String
   business         Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
   googleLocationId String?  @unique
+  googleAccountId  String?
   name             String
   address          String?
+  lastSyncedAt     DateTime?
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 
   qrCodes        QRCode[]
   reviewSessions ReviewSession[]
   reviewReplies  ReviewReply[]
+  googleReviews  GoogleReview[]
 }
 
 model Plan {
@@ -133,10 +142,33 @@ model GoogleOAuthToken {
   id           String   @id @default(cuid())
   businessId   String   @unique
   business     Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  // accessToken and refreshToken hold AES-256-GCM ciphertext (see TokenCryptoService), never plaintext.
   accessToken  String
   refreshToken String
   expiresAt    DateTime
+  scope        String   @default("")
+  googleEmail  String?
   createdAt    DateTime @default(now())
+}
+
+// A review pulled from the connected Google Business Profile. Deleted on disconnect.
+model GoogleReview {
+  id               String      @id @default(cuid())
+  locationId       String
+  location         Location    @relation(fields: [locationId], references: [id], onDelete: Cascade)
+  googleReviewName String      @unique // accounts/{a}/locations/{l}/reviews/{r}
+  reviewerName     String
+  rating           Int
+  comment          String?
+  reviewedAt       DateTime
+  replyContent     String?
+  repliedAt        DateTime?
+  draftReply       String?
+  status           ReplyStatus @default(NEEDS_REPLY)
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+
+  @@index([locationId, status])
 }
 
 model ReviewReply {

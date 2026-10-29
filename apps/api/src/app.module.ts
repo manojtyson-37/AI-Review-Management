@@ -15,6 +15,8 @@ import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 
 import { IntegrationsModule } from './integrations/integrations.module';
+import { ReviewsModule } from './reviews/reviews.module';
+import { CommonModule } from './common/common.module';
 
 @Module({
   imports: [
@@ -22,7 +24,7 @@ import { IntegrationsModule } from './integrations/integrations.module';
       ttl: 60000,
       limit: 100,
     }]),
-    PrismaModule, AuthModule, UsersModule, BusinessesModule, LocationsModule, AiModule, AnalyticsModule, QrcodesModule, SessionsModule, IntegrationsModule
+    CommonModule, PrismaModule, AuthModule, UsersModule, BusinessesModule, LocationsModule, AiModule, AnalyticsModule, QrcodesModule, SessionsModule, IntegrationsModule, ReviewsModule
   ],
   controllers: [AppController],
   providers: [

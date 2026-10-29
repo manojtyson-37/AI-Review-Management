@@ -16,6 +16,8 @@ interface Review {
   date: string;
   reply: string | null;
   locationId: string;
+  locationName: string;
+  draft?: string | null;
 }
 
 export default function ReviewsPage() {
@@ -32,16 +34,20 @@ export default function ReviewsPage() {
     }
   });
 
-  const locations = reviews ? [...new Set(reviews.map(r => r.locationId))] : [];
+  const locations = reviews
+    ? [...new Map(reviews.map(r => [r.locationId, r.locationName])).entries()]
+    : [];
   const filteredReviews = locationFilter === 'all' ? reviews : reviews?.filter(r => r.locationId === locationFilter);
+
+  const syncReviews = useMutation({
+    mutationFn: async () => (await apiClient.post('/reviews/sync', {})).data,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['reviews'] }),
+    onError: () => window.alert("Could not sync reviews. Check that Google is connected on the Integrations page."),
+  });
 
   const generateReply = useMutation({
     mutationFn: async (review: Review) => {
-      const res = await apiClient.post('/reviews/reply/generate', {
-        reviewText: review.text,
-        rating: review.rating,
-        author: review.author,
-      });
+      const res = await apiClient.post('/reviews/reply/generate', { reviewId: review.id });
       return res.data.draft;
     },
     onSuccess: (draft, variables) => {
@@ -59,7 +65,7 @@ export default function ReviewsPage() {
       return res.data;
     },
     onSuccess: (_, variables) => {
-      window.alert("Reply posted to Google successfully!");
+      window.alert("Reply posted to Google.");
       setActiveReplyId(null);
       
       // Optimistically update the UI
@@ -93,6 +99,9 @@ export default function ReviewsPage() {
         
         {/* Location Filter */}
         <div className="flex items-center gap-2">
+          <Button variant="outline" onClick={() => syncReviews.mutate()} disabled={syncReviews.isPending}>
+            {syncReviews.isPending ? "Syncing..." : "Sync from Google"}
+          </Button>
           <span className="text-sm text-muted-foreground">Location:</span>
           <select 
             className="rounded-md border border-input bg-background px-3 py-2 text-sm"
@@ -100,8 +109,8 @@ export default function ReviewsPage() {
             onChange={e => setLocationFilter(e.target.value)}
           >
             <option value="all">All Locations</option>
-            {locations.map(loc => (
-              <option key={loc} value={loc}>{loc}</option>
+            {locations.map(([id, name]) => (
+              <option key={id} value={id}>{name}</option>
             ))}
           </select>
         </div>

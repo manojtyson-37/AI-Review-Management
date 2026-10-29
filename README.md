@@ -1,3 +1,5 @@
+> **Status:** reference implementation. The central multi-tenant reviews service now lives in `manojtyson-37/tysonlabs` (`docs/reviews-service-design.md`). This branch's Google Business Profile code (OAuth, sync, reply posting, encrypted tokens, authz fixes) is kept for reuse. It was only tested against mocks, never against real Google or a real database.
+
 # Turborepo starter
 
 This Turborepo starter is maintained by the Turborepo core team.
@@ -157,3 +159,15 @@ Learn more about the power of Turborepo:
 - [Filtering](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters)
 - [Configuration Options](https://turborepo.dev/docs/reference/configuration)
 - [CLI Usage](https://turborepo.dev/docs/reference/command-line-reference)
+
+## Google Business Profile integration
+
+Connects a business's Google Business Profile so reviews can be synced, replies drafted with AI, and approved replies posted.
+
+- OAuth scopes: `openid`, `email`, `https://www.googleapis.com/auth/business.manage` (offline access).
+- Flow: `GET /integrations/google/connect-url` -> Google consent -> `GET /integrations/google/callback`.
+- Locations: `GET /integrations/google/locations`, then `POST /integrations/google/locations/sync` to choose which to sync.
+- Reviews: `POST /reviews/sync`, `GET /reviews`, `POST /reviews/reply/generate` (draft only), `POST /reviews/reply/send` (the only call that writes to Google, requires owner/manager).
+- Tokens are AES-256-GCM encrypted at rest with `TOKEN_ENCRYPTION_KEY`.
+- `POST /integrations/google/disconnect` revokes access at Google, deletes tokens and all synced reviews. `DELETE /integrations/google/data` deletes synced data only.
+- Before production: enable the My Business Account Management, Business Information and (legacy) My Business API v4 in Google Cloud, and get Business Profile API access approved. Apply the schema changes in `prisma/schema.prisma` to your database (review the SQL first; do not run against a database holding real data without a backup).
